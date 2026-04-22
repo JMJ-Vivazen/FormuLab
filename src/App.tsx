@@ -12,6 +12,7 @@ import { Samples } from './pages/Samples'
 import { FeedbackList } from './pages/FeedbackList'
 import { Materials } from './pages/Materials'
 import { GateReviews } from './pages/GateReviews'
+import { Reports } from './pages/Reports'
 import { Login } from './pages/Login'
 
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ function AppShell() {
           <Route path="/feedback" element={<FeedbackList />} />
           <Route path="/materials" element={<Materials />} />
           <Route path="/gates" element={<GateReviews />} />
+          <Route path="/reports" element={<Reports />} />
         </Routes>
       </main>
     </div>
