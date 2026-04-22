@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FormuLab SOP — Vivazen R&D QMS Platform</title>
+<style>
+  /* ── Fonts ── */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Base ── */
+  :root {
+    --brand:       #4f46e5;
+    --brand-light: #eef2ff;
+    --brand-mid:   #c7d2fe;
+    --slate-900:   #0f172a;
+    --slate-700:   #334155;
+    --slate-500:   #64748b;
+    --slate-300:   #cbd5e1;
+    --slate-100:   #f1f5f9;
+    --slate-50:    #f8fafc;
+    --green:       #16a34a;
+    --amber:       #d97706;
+    --red:         #dc2626;
+    --violet:      #7c3aed;
+    --radius:      6px;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--slate-700);
+    background: #e2e8f0;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── Page shell ── */
+  .page {
+    max-width: 820px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.12);
+    overflow: hidden;
+  }
+
+  /* ── Cover header ── */
+  .cover {
+    background: var(--brand);
+    padding: 36px 44px 32px;
+    color: #fff;
+  }
+  .cover-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .cover-logo {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,.18);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .cover-brand {
+    font-size: 18px; font-weight: 700; letter-spacing: -.3px;
+  }
+  .cover-sub {
+    font-size: 12px; opacity: .75; margin-top: 1px;
+  }
+  .cover h1 {
+    font-size: 26px; font-weight: 700; letter-spacing: -.5px;
+    line-height: 1.2; margin-bottom: 8px;
+  }
+  .cover-tagline { font-size: 13px; opacity: .8; }
+
+  .meta-table {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,.2);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .meta-cell {
+    background: rgba(255,255,255,.1);
+    padding: 10px 14px;
+  }
+  .meta-label { font-size: 10px; opacity: .65; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
+  .meta-value { font-size: 12px; font-weight: 600; }
+
+  /* ── Quick-ref bar ── */
+  .qr-bar {
+    background: var(--brand-light);
+    border-bottom: 1px solid var(--brand-mid);
+    padding: 20px 44px;
+  }
+  .qr-bar h2 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--brand); margin-bottom: 12px;
+  }
+  .qr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 32px;
+  }
+  .qr-row {
+    display: flex; gap: 8px;
+    font-size: 12px; padding: 3px 0;
+    border-bottom: 1px solid var(--brand-mid);
+  }
+  .qr-task { color: var(--slate-700); flex: 1; }
+  .qr-dest { color: var(--brand); font-weight: 600; white-space: nowrap; }
+
+  /* ── Body ── */
+  .body { padding: 0 44px 44px; }
+
+  /* ── Section ── */
+  .sop {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 2px solid var(--slate-100);
+  }
+  .sop:first-child { border-top: none; }
+
+  .sop-header {
+    display: flex; align-items: flex-start; gap: 14px;
+    margin-bottom: 18px;
+  }
+  .sop-num {
+    background: var(--brand);
+    color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-top: 2px;
+    letter-spacing: .3px;
+  }
+  .sop-title { font-size: 16px; font-weight: 700; color: var(--slate-900); line-height: 1.25; }
+  .sop-when  { font-size: 12px; color: var(--slate-500); margin-top: 3px; }
+
+  /* ── Steps ── */
+  ol.steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+  }
+  ol.steps li {
+    counter-increment: step;
+    display: flex; gap: 14px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--slate-100);
+    align-items: flex-start;
+  }
+  ol.steps li:last-child { border-bottom: none; }
+  ol.steps li::before {
+    content: counter(step);
+    min-width: 24px; height: 24px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: 11px; font-weight: 700;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  ol.steps li strong { color: var(--slate-900); }
+
+  /* ── Sub-steps ── */
+  ul.sub {
+    margin-top: 6px;
+    padding-left: 2px;
+    list-style: none;
+  }
+  ul.sub li {
+    padding: 3px 0 3px 14px;
+    position: relative;
+    font-size: 12px;
+    color: var(--slate-600, #475569);
+  }
+  ul.sub li::before {
+    content: '—';
+    position: absolute; left: 0;
+    color: var(--slate-300);
+  }
+
+  /* ── Callout boxes ── */
+  .note, .warn, .tip {
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 12px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .note { background: var(--brand-light); border-left: 3px solid var(--brand); color: #3730a3; }
+  .warn { background: #fff7ed; border-left: 3px solid var(--amber); color: #92400e; }
+  .tip  { background: #f0fdf4; border-left: 3px solid var(--green); color: #14532d; }
+  .note-icon, .warn-icon, .tip-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin: 14px 0;
+  }
+  thead tr { background: var(--slate-900); color: #fff; }
+  thead th {
+    text-align: left;
+    padding: 9px 12px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  tbody tr:nth-child(even) { background: var(--slate-50); }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid var(--slate-100); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td strong { color: var(--slate-900); }
+
+  /* ── Inline code ── */
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    background: var(--slate-100);
+    color: var(--brand);
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  /* ── Status pills ── */
+  .pill {
+    display: inline-flex; align-items: center;
+    padding: 1px 8px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill-go     { background: #dcfce7; color: #15803d; }
+  .pill-cond   { background: #fef3c7; color: #92400e; }
+  .pill-hold   { background: #fee2e2; color: #b91c1c; }
+  .pill-recycle{ background: #ffedd5; color: #9a3412; }
+  .pill-a      { background: var(--slate-100); color: var(--slate-700); }
+  .pill-b      { background: #dbeafe; color: #1d4ed8; }
+  .pill-c      { background: #ffedd5; color: #9a3412; }
+
+  /* ── Section header (non-SOP) ── */
+  h3 { font-size: 13px; font-weight: 700; color: var(--slate-900); margin: 20px 0 8px; }
+  p  { margin-bottom: 8px; font-size: 13px; }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid var(--slate-100); margin: 32px 0; }
+
+  /* ── Footer ── */
+  .doc-footer {
+    background: var(--slate-50);
+    border-top: 1px solid var(--slate-200, #e2e8f0);
+    padding: 16px 44px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: var(--slate-500);
+  }
+
+  /* ── Print button (screen only) ── */
+  .print-btn {
+    display: flex; align-items: center; gap: 8px;
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--brand); color: #fff;
+    border: none; cursor: pointer;
+    padding: 12px 22px;
+    border-radius: 50px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(79,70,229,.4);
+    transition: transform .15s, box-shadow .15s;
+    z-index: 100;
+  }
+  .print-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,70,229,.5); }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; padding: 0; font-size: 11px; }
+    .page { box-shadow: none; border-radius: 0; max-width: 100%; }
+    .cover { background: var(--brand) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sop { page-break-inside: avoid; }
+    .print-btn { display: none; }
+    table { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+    .qr-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    thead tr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @page {
+    size: letter;
+    margin: 0.75in 0.6in;
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">
+  🖨️ Save as PDF
+</button>
+
+<div class="page">
+
+  <!-- ── Cover ── -->
+  <div class="cover">
+    <div class="cover-top">
+      <div class="cover-logo">⚗️</div>
+      <div>
+        <div class="cover-brand">FormuLab</div>
+        <div class="cover-sub">Vivazen R&amp;D QMS Platform</div>
+      </div>
+    </div>
+    <h1>Standard Operating Procedures</h1>
+    <div class="cover-tagline">Step-by-step reference for all platform tasks — formulas, samples, gates, materials, and feedback</div>
+    <div class="meta-table">
+      <div class="meta-cell"><div class="meta-label">Document</div><div class="meta-value">FormuLab-SOP-001</div></div>
+      <div class="meta-cell"><div class="meta-label">Version</div><div class="meta-value">1.0</div></div>
+      <div class="meta-cell"><div class="meta-label">Effective</div><div class="meta-value">April 2026</div></div>
+      <div class="meta-cell"><div class="meta-label">Owner</div><div class="meta-value">Vivazen R&amp;D</div></div>
+    </div>
+  </div>
+
+  <!-- ── Quick Reference ── -->
+  <div class="qr-bar">
+    <h2>Quick Reference — Where do I go to…?</h2>
+    <div class="qr-grid">
+      <div class="qr-row"><span class="qr-task">Create a new project</span><span class="qr-dest">Projects → New Project</span></div>
+      <div class="qr-row"><span class="qr-task">Enter a new formula</span><span class="qr-dest">Project Detail → New Version</span></div>
+      <div class="qr-row"><span class="qr-task">Revise an existing formula</span><span class="qr-dest">Project Detail → Revise (on formula card)</span></div>
+      <div class="qr-row"><span class="qr-task">Freeze a formula at G4</span><span class="qr-dest">Project Detail → Freeze (on formula card)</span></div>
+      <div class="qr-row"><span class="qr-task">Record a gate decision</span><span class="qr-dest">Project Detail → Record Gate</span></div>
+      <div class="qr-row"><span class="qr-task">Log a new sample lot</span><span class="qr-dest">Samples → Log Sample</span></div>
+      <div class="qr-row"><span class="qr-task">Update a sample's status</span><span class="qr-dest">Samples → inline status dropdown</span></div>
+      <div class="qr-row"><span class="qr-task">Submit sensory feedback</span><span class="qr-dest">Formulation Detail → Feedback tab → Add Feedback</span></div>
+      <div class="qr-row"><span class="qr-task">Add a new material / ingredient</span><span class="qr-dest">Materials → Add Material</span></div>
+      <div class="qr-row"><span class="qr-task">Update a COA status</span><span class="qr-dest">Materials → inline COA dropdown</span></div>
+      <div class="qr-row"><span class="qr-task">View a project's gate history</span><span class="qr-dest">Project Detail → Gate Reviews tab</span></div>
+      <div class="qr-row"><span class="qr-task">Find a sample by RSLN or batch code</span><span class="qr-dest">Samples → search bar</span></div>
+      <div class="qr-row"><span class="qr-task">View all gate decisions across all projects</span><span class="qr-dest">Gate Reviews (sidebar)</span></div>
+      <div class="qr-row"><span class="qr-task">Create or print sample labels</span><span class="qr-dest">See SOP-009 — label bridging workflow</span></div>
+    </div>
+  </div>
+
+  <!-- ── Body ── -->
+  <div class="body">
+
+    <!-- SOP-001 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-001</div>
+        <div>
+          <div class="sop-title">Create a New Development Project</div>
+          <div class="sop-when">Use when: a new product idea has been approved for development and needs a controlled project record in the system.</div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Click <strong>Projects</strong> in the left sidebar.</li>
+        <li>Click <strong>New Project</strong> (top right, indigo button).</li>
+        <li>Confirm or edit the <strong>Project Code</strong>. The format is <code>PRJ-YYYY-###</code> (e.g., <code>PRJ-2026-003</code>). Do not reuse codes from prior projects.</li>
+        <li>Enter the <strong>Project Name</strong> (e.g., "Zen Silver Shot").</li>
+        <li>Select the <strong>Category</strong> (e.g., Functional Beverage).</li>
+        <li>Set <strong>Priority</strong>: Low / Medium / High / Critical. Use <em>Critical</em> only for projects with active commercial commitments or regulatory deadlines.</li>
+        <li>Set <strong>Starting Gate</strong> to <strong>G0</strong> for all new projects.</li>
+        <li>Enter the <strong>Owner</strong> — the person driving the project forward.</li>
+        <li>Enter the <strong>CMO</strong> if a manufacturing partner is already assigned (optional).</li>
+        <li>Write the <strong>QTPP (Target Product Profile)</strong>. Include: format, serving size, target actives with dose ranges, flavor/sensory direction, and shelf-life requirement.
+          <ul class="sub">
+            <li>Example: <em>"Ready-to-drink 2 oz shot. Relaxation stack: Ashwagandha KSM-66 300mg + Chamomile 200mg. Citrus-forward flavor. 12 months ambient shelf life."</em></li>
+          </ul>
+        </li>
+        <li>Enter <strong>Target Actives</strong> — list each key ingredient and its target dose.</li>
+        <li>Enter the <strong>Shelf-Life Target</strong> (e.g., "12 months ambient").</li>
+        <li>Enter the <strong>Target Sensory Profile</strong> (e.g., "Light citrus, subtle floral, clean finish. No bitterness.").</li>
+        <li>Click <strong>Create Project</strong>.</li>
+        <li>Immediately record a G0 gate decision to formally document the intake triage. See <strong>SOP-004</strong>.</li>
+      </ol>
+    </div>
+
+    <!-- SOP-002 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-002</div>
+        <div>
+          <div class="sop-title">Enter a New Formula (First Version)</div>
+          <div class="sop-when">Use when: creating the very first formulation for a project.</div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Click <strong>Projects</strong> → open the project you are formulating for.</li>
+        <li>Click <strong>New Version</strong> (top right, indigo button).</li>
+        <li>Set the <strong>Version Label</strong> to <code>v0.1</code>. All pre-freeze versions use the <code>v0.x</code> naming convention.</li>
+        <li>Enter a descriptive <strong>Formulation Name</strong> (e.g., "Initial Draft", "Baseline Citrus Build").</li>
+        <li>In <strong>What Changed</strong>, describe the starting rationale — what you are trying to achieve with this version.</li>
+        <li>In <strong>Label Impact</strong>, note any ingredient choices that have immediate label implications. Leave blank for a first version.</li>
+        <li>Add each ingredient in the <strong>Ingredients table</strong>. For each row, fill in:
+          <ul class="sub">
+            <li>Name (match the Materials master if the ingredient is registered there)</li>
+            <li>Supplier</li>
+            <li>Amount and Unit (e.g., 300 mg, 15 mL, 40 g)</li>
+            <li>Percentage (optional)</li>
+            <li>Category (Active, Flavor, Sweetener, Acidulant, Base, etc.)</li>
+          </ul>
+        </li>
+        <li>Write <strong>Process Notes</strong> — mixing sequence, temperatures, critical steps.</li>
+        <li>Write <strong>Target Profile</strong> — what this specific version is meant to achieve sensorially.</li>
+        <li>Confirm <strong>Created By</strong> is your name. Set <strong>Initial Status</strong> to <em>Draft</em>.</li>
+        <li>Click <strong>Create Formulation</strong>.</li>
+      </ol>
+      <div class="note"><span class="note-icon">ℹ</span>Next step is typically to produce a sample batch and collect feedback. See <strong>SOP-005</strong> and <strong>SOP-007</strong>.</div>
+    </div>
+
+    <!-- SOP-003 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-003</div>
+        <div>
+          <div class="sop-title">Revise an Existing Formula</div>
+          <div class="sop-when">Use when: feedback has been collected and changes need to be made, or a new iteration is required based on design decisions.</div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Open the project → <strong>Formulations tab</strong>.</li>
+        <li>Find the version you are branching from and click the <strong>Revise</strong> button (branch icon). The form opens pre-filled with all ingredients, process notes, and target profile from the parent version.</li>
+        <li>The <strong>Version Label</strong> auto-increments (v0.2, v0.3, etc.). Adjust if needed.</li>
+        <li>Update the <strong>Formulation Name</strong> to describe the change (e.g., "Reduced Citric + More Chamomile").</li>
+        <li>Fill in <strong>What Changed</strong> — this is the most important field. Write a complete description of every change made and the reason for each one. Reference specific feedback scores or data that drove the decision.
+          <ul class="sub">
+            <li>Example: <em>"Reduced citric acid from 2g to 1.5g — aftertaste scored 4/10; panel cited harshness. Bumped chamomile 200mg → 250mg — panel requested stronger floral note."</em></li>
+          </ul>
+        </li>
+        <li>Fill in <strong>Label Impact</strong> if any change requires a label update (e.g., new allergen source, sweetener type change, new active ingredient).</li>
+        <li>Edit the ingredients table, process notes, and target profile as needed.</li>
+        <li>Click <strong>Create Revision</strong>.</li>
+      </ol>
+      <div class="warn"><span class="warn-icon">⚠</span>Do not delete old formula versions. The full version history is the audit trail. All previous versions must remain visible in the timeline.</div>
+    </div>
+
+    <!-- SOP-004 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-004</div>
+        <div>
+          <div class="sop-title">Record a Gate Decision</div>
+          <div class="sop-when">Use when: a gate review has occurred and the decision needs to be formally documented to advance, hold, or recycle the project.</div>
+        </div>
+      </div>
+
+      <h3>Valid gate decisions</h3>
+      <table>
+        <thead><tr><th>Decision</th><th>Meaning</th><th>What happens in FormuLab</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill pill-go">GO</span></td><td>Evidence reviewed and accepted.</td><td>Project stage advances to the next gate.</td></tr>
+          <tr><td><span class="pill pill-cond">GO with Conditions</span></td><td>Project advances but specific conditions must be formally closed.</td><td>Stage advances; condition details, owner, and due date are required.</td></tr>
+          <tr><td><span class="pill pill-hold">HOLD</span></td><td>Blocking issue found. Downstream work is suspended.</td><td>Stage does not advance. A subsequent GO decision lifts the hold.</td></tr>
+          <tr><td><span class="pill pill-recycle">RECYCLE</span></td><td>Project returns to an earlier stage.</td><td>Stage does not auto-change; manually set the stage back after recording.</td></tr>
+        </tbody>
+      </table>
+
+      <ol class="steps">
+        <li>Open the project → click <strong>Record Gate</strong> (violet button in the header). The gate pre-fills to the project's current stage.</li>
+        <li>Confirm the correct <strong>Gate</strong> is selected in the dropdown.</li>
+        <li>Select the <strong>Decision</strong> (GO / GO with Conditions / HOLD / RECYCLE).</li>
+        <li>Enter the <strong>Actual Review Date</strong>.</li>
+        <li>Enter the <strong>Planned Date</strong> if different from actual (optional, used to track schedule adherence).</li>
+        <li>Enter all <strong>Reviewers</strong> present (comma-separated).</li>
+        <li>Write <strong>Evidence Notes</strong> — summarize what was reviewed, what was confirmed, and any key findings. Be specific.</li>
+        <li>If decision is <strong>GO with Conditions</strong>, fill in the condition panel that appears:
+          <ul class="sub">
+            <li><strong>Condition Description</strong> — the specific deliverable required</li>
+            <li><strong>Condition Owner</strong> — person responsible for closing it</li>
+            <li><strong>Due Date</strong></li>
+          </ul>
+        </li>
+        <li>Click <strong>Record Decision</strong>.</li>
+      </ol>
+      <div class="note"><span class="note-icon">ℹ</span>A GO at <strong>G4</strong> automatically sets the project's Formula Frozen flag. See also <strong>SOP-013</strong> for the full G4 freeze procedure.</div>
+      <div class="warn"><span class="warn-icon">⚠</span>Gate records cannot be edited after saving. To correct a mistake, delete the record (trash icon in the Gate Reviews tab) and re-enter it.</div>
+    </div>
+
+    <!-- SOP-005 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-005</div>
+        <div>
+          <div class="sop-title">Log a New Sample Lot</div>
+          <div class="sop-when">Use when: a physical sample batch has been produced and needs to be entered into the sample control system (QP-245).</div>
+        </div>
+      </div>
+
+      <h3>Sample classes</h3>
+      <table>
+        <thead><tr><th>Class</th><th>When to use</th><th>Key requirement</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill pill-a">Class A</span></td><td>Internal reference, non-ingestion (analytical standards, visual mocks, packaging samples)</td><td>Minimal controls. No ingestion. Internal only.</td></tr>
+          <tr><td><span class="pill pill-b">Class B</span></td><td>Internal ingestion (tasting by employees inside the org)</td><td>Label issuance and second-person verification required before release.</td></tr>
+          <tr><td><span class="pill pill-c">Class C</span></td><td>External distribution, or any sample where ingestion is possible outside controlled custody</td><td>Strictest controls. Allergen/ingredient disclosure. QA approval required before distribution.</td></tr>
+        </tbody>
+      </table>
+
+      <ol class="steps">
+        <li>Click <strong>Samples</strong> in the sidebar → <strong>Log Sample</strong>. <em>(Or go to Formulation Detail → Samples tab → Log Sample to link directly to a specific formula version.)</em></li>
+        <li>Select the <strong>Project</strong> and <strong>Formula Version</strong> the sample was made from.</li>
+        <li>Enter the <strong>Batch Code</strong> — your internal production reference (e.g., <code>ZCB-003</code>).</li>
+        <li>Select the <strong>Sample Class</strong> using the table above as a guide.</li>
+        <li>Select the <strong>Site</strong> where the sample was produced or will be stored.</li>
+        <li>Enter the <strong>Date Produced</strong>.</li>
+        <li>Enter <strong>Quantity</strong> and <strong>Unit</strong> (e.g., 30 bottles).</li>
+        <li>Select the <strong>Storage Condition</strong> (Ambient, Refrigerated 2–8°C, Frozen, etc.).</li>
+        <li>Enter the <strong>Expiry / Review Date</strong> — the date QA must review this lot's status.</li>
+        <li>Enter <strong>Intended Use</strong> (e.g., "Internal sensory panel", "External lab analytical testing", "Consumer focus group").</li>
+        <li>Check <strong>Ingestion Possible</strong> if anyone will taste or consume the sample.</li>
+        <li>Check <strong>External Distribution</strong> if the sample will leave the building.</li>
+        <li>Click <strong>Log Sample</strong>. The <strong>RSLN</strong> is auto-generated in the format <code>RDS-YYMMDD-SITE-IN-SEQ</code> and assigned to the record.</li>
+      </ol>
+      <div class="warn"><span class="warn-icon">⚠</span>If Ingestion Possible is checked and the class is not C, the app will display a warning. Per QP-245, ingestion-possible samples must be Class C.</div>
+    </div>
+
+    <!-- SOP-006 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-006</div>
+        <div>
+          <div class="sop-title">Update a Sample's Lifecycle Status</div>
+          <div class="sop-when">Use when: a sample lot's physical state has changed — it has been released, shipped, consumed, destroyed, etc.</div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Click <strong>Samples</strong> in the left sidebar.</li>
+        <li>Find the sample using the search bar (search by RSLN, batch code, formulation, or project name).</li>
+        <li>In the sample's row, use the <strong>lifecycle status dropdown</strong> on the right side. Changes save immediately.</li>
+      </ol>
+
+      <h3>Status transition guide</h3>
+      <table>
+        <thead><tr><th>Event that occurred</th><th>Set status to</th></tr></thead>
+        <tbody>
+          <tr><td>RSLN assigned; labels being prepared</td><td>Assigned</td></tr>
+          <tr><td>Labels printed and applied</td><td>Labeled</td></tr>
+          <tr><td>Lot placed under QA hold</td><td>Quarantine</td></tr>
+          <tr><td>QA cleared the lot for intended use</td><td>Released</td></tr>
+          <tr><td>Lot physically moved to a storage location</td><td>In Storage</td></tr>
+          <tr><td>Lot shipped to external lab, CMO, or panel</td><td>In Transit</td></tr>
+          <tr><td>Recipient confirmed delivery</td><td>At Recipient</td></tr>
+          <tr><td>Expiry or review date reached</td><td>At Review Date</td></tr>
+          <tr><td>QA approved an extension with new review date</td><td>Extended</td></tr>
+          <tr><td>Sample fully used in testing or sensory evaluation</td><td>Consumed</td></tr>
+          <tr><td>Lot returned from external recipient</td><td>Returned</td></tr>
+          <tr><td>Lot physically destroyed and documented</td><td>Destroyed</td></tr>
+          <tr><td>Record closed and archived</td><td>Closed</td></tr>
+        </tbody>
+      </table>
+      <div class="warn"><span class="warn-icon">⚠</span>Consumed, Destroyed, and Closed are terminal states. A returned lot must go to <em>Returned</em> first, then through receipt inspection before any re-use — do not set directly to Released.</div>
+    </div>
+
+    <!-- SOP-007 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-007</div>
+        <div>
+          <div class="sop-title">Submit Sensory Feedback</div>
+          <div class="sop-when">Use when: a tasting or evaluation session has been completed and scores and notes need to be recorded against a specific formula and sample lot.</div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Click <strong>Formulations</strong> → click the formulation version that was evaluated.</li>
+        <li>Click the <strong>Feedback</strong> tab → <strong>Add Feedback</strong>.</li>
+        <li>Enter the <strong>Reviewer Name</strong>.</li>
+        <li>Select the reviewer's <strong>Role</strong>: Internal Tester / Consumer Panel / Customer / Scientist / Manager / External Reviewer.</li>
+        <li>If more than one sample lot exists for this formulation, select the specific <strong>Sample</strong> batch that was evaluated.</li>
+        <li>Use the <strong>sliders</strong> to rate each attribute 1–10:
+          <ul class="sub">
+            <li><strong>Taste</strong> — overall flavor quality</li>
+            <li><strong>Aroma</strong> — smell before and during consumption</li>
+            <li><strong>Appearance</strong> — color, clarity, visual appeal</li>
+            <li><strong>Texture</strong> — mouthfeel, viscosity, carbonation</li>
+            <li><strong>Aftertaste</strong> — the finish after swallowing</li>
+            <li><strong>Overall</strong> — holistic score</li>
+          </ul>
+        </li>
+        <li>In <strong>What worked well</strong>, record specific positives. Be precise — "honey sweetness is natural and rounds out the citrus" is more useful than "tastes good."</li>
+        <li>In <strong>What didn't work</strong>, record specific issues (e.g., "aftertaste is harsh and metallic — possibly the citric acid level").</li>
+        <li>In <strong>Suggestions for next iteration</strong>, record actionable changes the reviewer would want to see.</li>
+        <li>Check <strong>Recommend reformulation before moving forward</strong> if another revision is needed before any approval or distribution decision.</li>
+        <li>Click <strong>Submit Feedback</strong>.</li>
+      </ol>
+      <div class="tip"><span class="tip-icon">✓</span>The radar chart and average score ring on the formulation detail page update automatically as new feedback is submitted.</div>
+    </div>
+
+    <!-- SOP-008 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-008</div>
+        <div>
+          <div class="sop-title">Add or Update a Material in the Materials Master</div>
+          <div class="sop-when">Use when: a new ingredient is being introduced, or a material's COA or qualification status has changed.</div>
+        </div>
+      </div>
+
+      <h3>Adding a new material</h3>
+      <ol class="steps">
+        <li>Click <strong>Materials</strong> in the left sidebar → <strong>Add Material</strong>.</li>
+        <li>Enter the <strong>Material Name</strong> using the supplier's exact specification name for traceability (e.g., "Ashwagandha Extract KSM-66" not just "Ashwagandha").</li>
+        <li>Enter the <strong>Supplier</strong> name.</li>
+        <li>Select the <strong>Category</strong> (Active/Botanical, Flavor, Sweetener, Acidulant, etc.).</li>
+        <li>Set the initial <strong>COA Status</strong>:
+          <ul class="sub">
+            <li><strong>Pending</strong> — COA not yet received</li>
+            <li><strong>Received</strong> — COA in hand, not yet reviewed</li>
+            <li><strong>Approved</strong> — COA reviewed and accepted by QA</li>
+            <li><strong>Rejected</strong> — COA reviewed and not acceptable</li>
+          </ul>
+        </li>
+        <li>In <strong>Notes</strong>, record specification details, allergen declarations, grade (food, USP), standardization level, and any qualification notes.</li>
+        <li>Check <strong>R&D Approved</strong> if cleared for prototype development use.</li>
+        <li>Check <strong>Commercial Ready</strong> if the supplier is qualified for commercial-scale production. A material can be R&D Approved but not yet Commercial Ready.</li>
+        <li>Click <strong>Add Material</strong>. A code (<code>MAT-####</code>) is auto-assigned.</li>
+      </ol>
+
+      <h3>Updating an existing material</h3>
+      <table>
+        <thead><tr><th>What you need to update</th><th>How to do it</th></tr></thead>
+        <tbody>
+          <tr><td><strong>COA Status</strong></td><td>Find the material row → use the <strong>COA dropdown</strong> inline. Saves immediately.</td></tr>
+          <tr><td><strong>R&D Approved</strong></td><td>Click the <strong>R&D</strong> button on the row to toggle on (green) or off. Saves immediately.</td></tr>
+          <tr><td><strong>Commercial Ready</strong></td><td>Click the <strong>Comm.</strong> button on the row to toggle on (violet) or off. Saves immediately.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SOP-009 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-009</div>
+        <div>
+          <div class="sop-title">Create Sample Labels and Shipping Documents</div>
+          <div class="sop-when">Use when: physical sample labels or a Chain of Custody document needs to be prepared before a sample lot is distributed or shipped.</div>
+        </div>
+      </div>
+
+      <div class="note"><span class="note-icon">ℹ</span>FormuLab does not yet generate printable labels or CoC documents. Label generation (LBL-QP-245-01/02/03/04) and Chain of Custody records (FRM-QP-245-06/07) are planned future platform modules. The procedure below bridges the current gap.</div>
+
+      <h3>Step 1 — Get the RSLN from FormuLab</h3>
+      <ol class="steps">
+        <li>Log the sample lot in FormuLab per <strong>SOP-005</strong> before preparing any labels.</li>
+        <li>Click <strong>Samples</strong> → find the lot. The RSLN is shown in indigo monospace text directly below the batch code (e.g., <code>RDS-260322-ECS-IN-002</code>).</li>
+        <li>Note this RSLN — it must appear on all physical labels and shipping documents for this lot.</li>
+      </ol>
+
+      <h3>Step 2 — Prepare the physical label</h3>
+      <p>Use the current Word/Excel label template and populate it with the following fields from the FormuLab sample record:</p>
+      <table>
+        <thead><tr><th>Label field</th><th>Class A required</th><th>Class B required</th><th>Class C required</th></tr></thead>
+        <tbody>
+          <tr><td>RSLN</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Product / formula name and version</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Production date</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Storage condition</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>"NOT FOR SALE" statement</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Expiry / review date</td><td></td><td>✓</td><td>✓</td></tr>
+          <tr><td>Intended use statement</td><td></td><td>✓</td><td>✓</td></tr>
+          <tr><td>"FOR INTERNAL USE ONLY — NOT FOR RESALE"</td><td></td><td>✓</td><td></td></tr>
+          <tr><td>Net contents / fill quantity</td><td></td><td></td><td>✓</td></tr>
+          <tr><td>Ingredient listing</td><td></td><td></td><td>✓</td></tr>
+          <tr><td>Allergen declaration</td><td></td><td></td><td>✓</td></tr>
+          <tr><td>"R&D SAMPLE — NOT FOR SALE"</td><td></td><td></td><td>✓</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Step 3 — Shipping and Chain of Custody</h3>
+      <ol class="steps">
+        <li>Before shipping, confirm the lot status is <em>Released</em> in FormuLab.</li>
+        <li>Prepare the Chain of Custody record (FRM-QP-245-06) using the current Word/Excel template. Reference the RSLN and batch code from FormuLab on the CoC document.</li>
+        <li>Update the sample lifecycle status to <strong>In Transit</strong> in FormuLab per <strong>SOP-006</strong> at the time of shipment.</li>
+        <li>When the recipient confirms delivery, update the status to <strong>At Recipient</strong>.</li>
+      </ol>
+    </div>
+
+    <!-- SOP-010 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-010</div>
+        <div>
+          <div class="sop-title">Find a Sample, Formula, or Project</div>
+          <div class="sop-when">Use when: looking up a specific record by ID, name, or RSLN.</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Looking for</th><th>Go to</th><th>Search or filter by</th></tr></thead>
+        <tbody>
+          <tr><td>A sample lot</td><td>Samples (sidebar)</td><td>RSLN, batch code, formulation name, or project name in the search bar</td></tr>
+          <tr><td>A formulation version</td><td>Formulations (sidebar)</td><td>Formula name, version label (e.g., <code>v0.2</code>), or project name; filter by status</td></tr>
+          <tr><td>A project</td><td>Projects (sidebar)</td><td>Project name, project code (e.g., <code>PRJ-2026-001</code>), or category; filter by status or gate</td></tr>
+          <tr><td>A gate decision</td><td>Gate Reviews (sidebar)</td><td>Project dropdown, gate filter buttons (G0–G6), or decision filter buttons</td></tr>
+          <tr><td>All gates for one project</td><td>Projects → open project → Gate Reviews tab</td><td>All decisions for that project listed chronologically</td></tr>
+          <tr><td>A material</td><td>Materials (sidebar)</td><td>Material name, MAT code, or supplier; filter by category or COA status</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SOP-011 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-011</div>
+        <div>
+          <div class="sop-title">View the Pipeline and Compliance Status</div>
+          <div class="sop-when">Use when: preparing for a management review, QA audit, or checking for overdue actions and open conditions.</div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>Click <strong>Dashboard</strong> in the left sidebar.</li>
+        <li>The <strong>Stage-Gate Pipeline</strong> shows the count of active projects at each gate. Click any project name to open it directly.</li>
+        <li>The top stats row shows <strong>Open Conditions</strong>, <strong>Projects on HOLD</strong>, <strong>Materials Pending COA</strong>, and <strong>Frozen Formulas</strong>.</li>
+        <li>For condition details and due dates, click <strong>Gate Reviews</strong> in the sidebar. The <strong>Gate Pass Rate by Stage</strong> table shows pass rates per gate — a consistently low rate at a specific gate may indicate systemic evidence gaps.</li>
+        <li>For materials readiness, click <strong>Materials</strong> → use the COA filter to show only <em>Pending</em> or <em>Received</em> materials. These need follow-up before a project can advance to G4 or G5.</li>
+      </ol>
+    </div>
+
+    <!-- SOP-012 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-012</div>
+        <div>
+          <div class="sop-title">Correct or Delete a Record</div>
+          <div class="sop-when">Use only to correct data-entry errors. Do not delete records to revise decisions — create a correcting record instead.</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Record type</th><th>How to delete / correct</th><th>Cascade effect</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Gate review</strong></td><td>Project Detail → Gate Reviews tab → trash icon → re-enter correct record</td><td>None — gate reviews are standalone records</td></tr>
+          <tr><td><strong>Formulation version</strong></td><td>Project Detail → Formulations tab → trash icon on the version card</td><td>All linked samples and feedback are also deleted</td></tr>
+          <tr><td><strong>Sample lot</strong></td><td>Formulation Detail → Samples tab → trash icon on the sample card</td><td>All linked feedback for that lot is also deleted</td></tr>
+          <tr><td><strong>Feedback response</strong></td><td>Not directly deletable from the feedback list — navigate to the formulation → Feedback tab</td><td>None</td></tr>
+          <tr><td><strong>Project</strong></td><td>Project Detail → trash icon in header → confirm deletion</td><td>All formulations, samples, feedback, and gate reviews for the project are permanently deleted</td></tr>
+          <tr><td><strong>Material</strong></td><td>Materials → trash icon on the row</td><td>None — materials are standalone records</td></tr>
+        </tbody>
+      </table>
+      <div class="warn"><span class="warn-icon">⚠</span>Deletions are permanent and cannot be undone. Do not delete any record that has associated compliance evidence unless you are certain it is a test or data-entry error.</div>
+    </div>
+
+    <!-- SOP-013 -->
+    <div class="sop">
+      <div class="sop-header">
+        <div class="sop-num">SOP-013</div>
+        <div>
+          <div class="sop-title">Freeze a Formula at Gate 4</div>
+          <div class="sop-when">Use when: the G4 gate review has been passed with a GO decision and the selected candidate formula is being locked as V1.0.</div>
+        </div>
+      </div>
+      <div class="warn"><span class="warn-icon">⚠</span>Formula freeze is a one-way, compliance-level action. Post-freeze formulation changes require formal change control documentation. Do not freeze a formula before the G4 gate review is complete.</div>
+      <ol class="steps">
+        <li>Confirm the project is currently at <strong>G4 stage</strong> (check the stage stepper on the project detail page).</li>
+        <li>If not already done, record a G4 gate decision with decision = <strong>GO</strong> per <strong>SOP-004</strong>. This automatically sets the Formula Frozen flag on the project.</li>
+        <li>Open the project → <strong>Formulations tab</strong>.</li>
+        <li>Identify the candidate formula version to freeze (the version that passed the G4 review — typically the one currently In Testing or Approved).</li>
+        <li>If the version label is not already <code>v1.0</code>, note this — ideally the label is updated to v1.0 before freezing. You can create a revision labeled v1.0 and immediately freeze that revision.</li>
+        <li>Click the <strong>Freeze</strong> button (lock icon, violet) on the formula card.
+          <ul class="sub">
+            <li>The Freeze button only appears when the project stage is G4.</li>
+          </ul>
+        </li>
+        <li>The formulation card turns violet with a lock icon and "Frozen" label. Status is set to Approved.</li>
+        <li>The project header now shows a <strong>Formula Frozen</strong> pill.</li>
+      </ol>
+      <div class="note"><span class="note-icon">ℹ</span>Any new formulation version created after freeze will display a warning: "Post-freeze changes should go through formal change control." Label post-freeze versions as v1.1, v1.2, etc., and document the change control rationale in the <strong>What Changed</strong> field.</div>
+    </div>
+
+    <hr />
+
+    <!-- Data management note -->
+    <div class="sop" style="margin-top:24px; padding-top:0; border-top:none;">
+      <div class="sop-header">
+        <div class="sop-num" style="background:var(--slate-500)">INFO</div>
+        <div>
+          <div class="sop-title">Data Storage and Backup</div>
+        </div>
+      </div>
+      <p>All FormuLab data is stored in your browser's local storage on the device you use. Data persists between sessions but is not backed up to a server or shared automatically between users.</p>
+      <div class="warn"><span class="warn-icon">⚠</span>Do not clear your browser's site data or cache for the FormuLab URL — this will permanently delete all project records with no recovery path. Periodically export records or take screenshots of critical data as a backup measure.</div>
+      <p style="margin-top:8px;">Multi-user shared access and server-based storage are planned future enhancements. For now, designate one machine as the primary FormuLab workstation and ensure team members enter records on that device.</p>
+    </div>
+
+  </div><!-- end .body -->
+
+  <!-- ── Footer ── -->
+  <div class="doc-footer">
+    <span>FormuLab-SOP-001 &nbsp;·&nbsp; Version 1.0 &nbsp;·&nbsp; Effective April 2026</span>
+    <span>Vivazen R&amp;D QMS Platform &nbsp;·&nbsp; Internal Use Only</span>
+  </div>
+
+</div><!-- end .page -->
+
+</body>
+</html>
