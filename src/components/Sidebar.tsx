@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, FlaskConical, TestTube2, MessageSquare, FolderOpen, Package, GitMerge, LogOut } from 'lucide-react'
+import { LayoutDashboard, FlaskConical, TestTube2, MessageSquare, FolderOpen, Package, GitMerge, BarChart3, LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const links = [
@@ -10,6 +10,7 @@ const links = [
   { to: '/feedback',   label: 'Feedback',     icon: MessageSquare },
   { to: '/materials',  label: 'Materials',    icon: Package },
   { to: '/gates',      label: 'Gate Reviews', icon: GitMerge },
+  { to: '/reports',    label: 'Reports',      icon: BarChart3 },
 ]
 
 export function Sidebar() {
