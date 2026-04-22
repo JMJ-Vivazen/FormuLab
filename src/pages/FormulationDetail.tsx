@@ -1,17 +1,22 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Plus, TestTube2, MessageSquare, GitBranch, Beaker, Lock } from 'lucide-react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Plus, TestTube2, MessageSquare, GitBranch, Beaker, Lock, Copy, GitCompare } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { StatusBadge } from '../components/StatusBadge'
 import { ScoreRing } from '../components/ScoreRing'
 import { Modal } from '../components/Modal'
 import { IngredientTable } from '../components/IngredientTable'
 import { FeedbackRadar } from '../components/FeedbackRadar'
+import { FormulationCompareModal } from '../components/FormulationCompareModal'
+import { createFormulation } from '../lib/api/formulations'
 import { format } from 'date-fns'
 import type { SampleClass, SampleLifecycleStatus } from '../types'
 
 export function FormulationDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const qc = useQueryClient()
   const { formulations, projects, samples, feedback, addSample, addFeedback } = useStore()
 
   const form = formulations.find((f) => f.id === id)
@@ -20,10 +25,15 @@ export function FormulationDetail() {
   const formFeedback = feedback.filter((f) => f.formulationId === id)
   const avgScore = formFeedback.length
     ? formFeedback.reduce((s, f) => s + f.overallScore, 0) / formFeedback.length : 0
+  const projectFormulations = form ? formulations.filter((f) => f.projectId === form.projectId) : []
 
   const [tab, setTab] = useState<'ingredients' | 'samples' | 'feedback'>('ingredients')
   const [showNewSample, setShowNewSample] = useState(false)
   const [showNewFeedback, setShowNewFeedback] = useState(false)
+  const [showFork, setShowFork] = useState(false)
+  const [showCompare, setShowCompare] = useState(false)
+  const [forking, setForking] = useState(false)
+  const [forkForm, setForkForm] = useState({ versionLabel: '', changeLog: '' })
   const [selectedSampleId, setSelectedSampleId] = useState<string | null>(null)
 
   const [newSample, setNewSample] = useState({
@@ -62,6 +72,45 @@ export function FormulationDetail() {
       site: 'ECS', storageCondition: 'Ambient 20–25°C', intendedUse: '',
     })
     setShowNewSample(false)
+  }
+
+  const openFork = () => {
+    if (!form) return
+    const nextNumber = projectFormulations.reduce((m, f) => Math.max(m, f.versionNumber), 0) + 1
+    setForkForm({
+      versionLabel: `V${nextNumber}.0`,
+      changeLog: `Forked from ${form.versionLabel}`,
+    })
+    setShowFork(true)
+  }
+
+  const handleFork = async () => {
+    if (!form || !forkForm.versionLabel.trim() || forking) return
+    setForking(true)
+    try {
+      const nextNumber = projectFormulations.reduce((m, f) => Math.max(m, f.versionNumber), 0) + 1
+      const created = await createFormulation({
+        projectId: form.projectId,
+        parentId: form.id,
+        versionNumber: nextNumber,
+        versionLabel: forkForm.versionLabel.trim(),
+        name: form.name,
+        ingredients: form.ingredients.map((i) => ({ ...i, id: crypto.randomUUID() })),
+        processNotes: form.processNotes,
+        targetProfile: form.targetProfile,
+        status: 'draft',
+        frozen: false,
+        changeLog: forkForm.changeLog.trim(),
+        labelImpact: form.labelImpact,
+        riskNotes: form.riskNotes,
+        createdBy: form.createdBy,
+      })
+      qc.invalidateQueries({ queryKey: ['formulations'] })
+      setShowFork(false)
+      navigate(`/formulations/${created.id}`)
+    } finally {
+      setForking(false)
+    }
   }
 
   const handleAddFeedback = () => {
@@ -113,13 +162,30 @@ export function FormulationDetail() {
               )}
             </p>
           </div>
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 flex items-start gap-3">
             {avgScore > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-400">Avg feedback</span>
                 <ScoreRing score={parseFloat(avgScore.toFixed(1))} size={56} />
               </div>
             )}
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={openFork}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium hover:bg-indigo-100 transition-colors"
+                title="Create a new version starting from this formulation's ingredients"
+              >
+                <Copy size={12} /> Fork Version
+              </button>
+              <button
+                onClick={() => setShowCompare(true)}
+                disabled={projectFormulations.length < 2}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-700 rounded-lg text-xs font-medium hover:bg-slate-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                title={projectFormulations.length < 2 ? 'Need at least 2 formulations in project' : 'Compare to another version'}
+              >
+                <GitCompare size={12} /> Compare
+              </button>
+            </div>
           </div>
         </div>
 
@@ -470,6 +536,55 @@ export function FormulationDetail() {
           </div>
         </div>
       </Modal>
+
+      {/* Fork Modal */}
+      <Modal open={showFork} onClose={() => setShowFork(false)} title={`Fork from ${form.versionLabel}`} size="md">
+        <div className="space-y-4">
+          <p className="text-sm text-slate-500">
+            Creates a new formulation with {form.ingredients.length} ingredient{form.ingredients.length === 1 ? '' : 's'} copied from this version. The new version will be linked to {form.versionLabel} as its parent.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">New Version Label</label>
+            <input
+              autoFocus
+              value={forkForm.versionLabel}
+              onChange={(e) => setForkForm((f) => ({ ...f, versionLabel: e.target.value }))}
+              placeholder="V2.0"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Change Log <span className="text-slate-400 font-normal">(what will be different in this version)</span>
+            </label>
+            <textarea
+              value={forkForm.changeLog}
+              onChange={(e) => setForkForm((f) => ({ ...f, changeLog: e.target.value }))}
+              rows={3}
+              placeholder="Reducing sweetener by 20%, replacing natural flavor with citrus blend…"
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+            <button onClick={() => setShowFork(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+            <button
+              onClick={handleFork}
+              disabled={!forkForm.versionLabel.trim() || forking}
+              className="px-5 py-2 text-sm bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {forking ? 'Creating…' : 'Create Fork'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Compare Modal */}
+      <FormulationCompareModal
+        open={showCompare}
+        onClose={() => setShowCompare(false)}
+        current={form}
+        siblings={projectFormulations}
+      />
     </div>
   )
 }
