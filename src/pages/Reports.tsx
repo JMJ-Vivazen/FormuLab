@@ -8,11 +8,12 @@ import type {
   SampleLifecycleStatus, GateDecision, CoaStatus,
 } from '../types'
 
-type EntityKey = 'projects' | 'formulations' | 'samples' | 'feedback' | 'gateReviews' | 'materials'
+type EntityKey = 'projects' | 'formulations' | 'ingredients' | 'samples' | 'feedback' | 'gateReviews' | 'materials'
 
 const ENTITIES: { key: EntityKey; label: string }[] = [
   { key: 'projects',     label: 'Projects' },
   { key: 'formulations', label: 'Formulations' },
+  { key: 'ingredients',  label: 'Ingredients' },
   { key: 'samples',      label: 'Samples' },
   { key: 'feedback',     label: 'Feedback' },
   { key: 'gateReviews',  label: 'Gate Reviews' },
@@ -107,6 +108,45 @@ const FORMULATION_COLS = [
   { key: 'ingredientCount', label: 'Ingredients' },
   { key: 'createdBy', label: 'Created By' },
   { key: 'createdAt', label: 'Created' },
+]
+
+function shapeIngredients(formulations: Formulation[], projects: Project[]) {
+  const pById = new Map(projects.map(p => [p.id, p]))
+  const rows: Record<string, unknown>[] = []
+  for (const f of formulations) {
+    const p = pById.get(f.projectId)
+    for (const ing of f.ingredients) {
+      rows.push({
+        projectCode: p?.projectCode ?? '',
+        projectName: p?.name ?? '',
+        formulationVersion: f.versionLabel,
+        formulationName: f.name,
+        formulationStatus: f.status,
+        ingredientName: ing.name,
+        supplier: ing.supplier ?? '',
+        category: ing.category,
+        amount: ing.amount,
+        unit: ing.unit,
+        percentage: ing.percentage ?? '',
+        notes: ing.notes ?? '',
+      })
+    }
+  }
+  return rows
+}
+const INGREDIENT_COLS = [
+  { key: 'projectCode', label: 'Project' },
+  { key: 'projectName', label: 'Project Name' },
+  { key: 'formulationVersion', label: 'Version' },
+  { key: 'formulationName', label: 'Formulation' },
+  { key: 'formulationStatus', label: 'F. Status' },
+  { key: 'ingredientName', label: 'Ingredient' },
+  { key: 'supplier', label: 'Supplier' },
+  { key: 'category', label: 'Category' },
+  { key: 'amount', label: 'Amount' },
+  { key: 'unit', label: 'Unit' },
+  { key: 'percentage', label: '%' },
+  { key: 'notes', label: 'Notes' },
 ]
 
 function shapeSamples(items: Sample[], projects: Project[], formulations: Formulation[]) {
@@ -294,6 +334,18 @@ export function Reports() {
         )
         return { rows: shapeFormulations(filtered, projects), columns: FORMULATION_COLS }
       }
+      case 'ingredients': {
+        const scopedFormulations = formulations.filter(f =>
+          (projectFilter === 'all' || f.projectId === projectFilter) &&
+          (formulationStatus === 'all' || f.status === formulationStatus) &&
+          inRange(f.createdAt)
+        )
+        const all = shapeIngredients(scopedFormulations, projects)
+        const filtered = all.filter(r =>
+          matchSearch(`${r.ingredientName} ${r.supplier} ${r.category} ${r.formulationName} ${r.projectCode}`)
+        )
+        return { rows: filtered, columns: INGREDIENT_COLS }
+      }
       case 'samples': {
         const filtered = samples.filter(s =>
           matchSearch(`${s.batchCode} ${s.notes} ${s.intendedUse ?? ''}`) &&
@@ -401,7 +453,7 @@ export function Reports() {
           />
         </div>
 
-        {(entity === 'formulations' || entity === 'samples' || entity === 'feedback' || entity === 'gateReviews') && (
+        {(entity === 'formulations' || entity === 'ingredients' || entity === 'samples' || entity === 'feedback' || entity === 'gateReviews') && (
           <select className={selectCls} value={projectFilter} onChange={e => setProjectFilter(e.target.value)}>
             <option value="all">All projects</option>
             {projects.map(p => <option key={p.id} value={p.id}>{p.projectCode} — {p.name}</option>)}
@@ -430,7 +482,7 @@ export function Reports() {
           </>
         )}
 
-        {entity === 'formulations' && (
+        {(entity === 'formulations' || entity === 'ingredients') && (
           <select className={selectCls} value={formulationStatus} onChange={e => setFormulationStatus(e.target.value as FormulationStatus | 'all')}>
             <option value="all">All statuses</option>
             <option value="draft">Draft</option>
