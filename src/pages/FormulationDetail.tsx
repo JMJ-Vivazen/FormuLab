@@ -9,6 +9,7 @@ import { Modal } from '../components/Modal'
 import { IngredientTable } from '../components/IngredientTable'
 import { FeedbackRadar } from '../components/FeedbackRadar'
 import { FormulationCompareModal } from '../components/FormulationCompareModal'
+import { FormulationCostRollup } from '../components/FormulationCostRollup'
 import { createFormulation, updateFormulation } from '../lib/api/formulations'
 import { format } from 'date-fns'
 import type { Ingredient, SampleClass, SampleLifecycleStatus, FormulationStatus } from '../types'
@@ -17,7 +18,7 @@ export function FormulationDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { formulations, projects, samples, feedback, addSample, addFeedback } = useStore()
+  const { formulations, projects, samples, feedback, materials, addSample, addFeedback } = useStore()
 
   const form = formulations.find((f) => f.id === id)
   const project = form ? projects.find((p) => p.id === form.projectId) : null
@@ -349,6 +350,10 @@ export function FormulationDetail() {
       {/* Ingredients Tab */}
       {tab === 'ingredients' && (
         <div>
+          <FormulationCostRollup
+            ingredients={isEditing ? draft.ingredients : form.ingredients}
+            materials={materials}
+          />
           <div className="grid grid-cols-2 gap-4 mb-5">
             <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Process Notes</h3>

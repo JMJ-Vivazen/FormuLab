@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 .claude/
+
+# One-shot import artifacts (contain real NetSuite vendor + pricing data)
+scripts/netsuite_components.json
+scripts/import.sql
+scripts/import_chunk_*.sql

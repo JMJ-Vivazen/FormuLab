@@ -151,13 +151,19 @@ export interface Material {
   id: string
   materialCode: string
   name: string
-  supplier: string
-  category: string
+  supplier?: string
+  category?: string
   coaStatus: CoaStatus
   rdApproved: boolean
   commercialReady: boolean
   notes?: string
   lastUpdated: string
+  netsuiteItemId?: number
+  standardCost?: number
+  costCurrency?: string
+  costSyncedAt?: string
+  baseUnit?: string
+  purchaseDescription?: string
 }
 
 export interface AppState {

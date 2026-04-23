@@ -232,17 +232,24 @@ export function gateReviewToRow(g: Partial<GateReview>): Row {
 }
 
 export function rowToMaterial(r: Row): Material {
+  const standardCostRaw = r.standard_cost as string | number | null
   return {
     id: r.id as string,
     materialCode: r.material_code as string,
     name: r.name as string,
-    supplier: r.supplier as string,
-    category: r.category as string,
+    supplier: (r.supplier as string | null) ?? undefined,
+    category: (r.category as string | null) ?? undefined,
     coaStatus: r.coa_status as Material['coaStatus'],
     rdApproved: r.rd_approved as boolean,
     commercialReady: r.commercial_ready as boolean,
     notes: (r.notes as string | null) ?? undefined,
     lastUpdated: r.updated_at as string,
+    netsuiteItemId: (r.netsuite_item_id as number | null) ?? undefined,
+    standardCost: standardCostRaw == null ? undefined : Number(standardCostRaw),
+    costCurrency: (r.cost_currency as string | null) ?? undefined,
+    costSyncedAt: (r.cost_synced_at as string | null) ?? undefined,
+    baseUnit: (r.base_unit as string | null) ?? undefined,
+    purchaseDescription: (r.purchase_description as string | null) ?? undefined,
   }
 }
 
@@ -250,11 +257,17 @@ export function materialToRow(m: Partial<Material>): Row {
   const out: Row = {}
   if (m.materialCode !== undefined) out.material_code = m.materialCode
   if (m.name !== undefined) out.name = m.name
-  if (m.supplier !== undefined) out.supplier = m.supplier
-  if (m.category !== undefined) out.category = m.category
+  if (m.supplier !== undefined) out.supplier = m.supplier ?? null
+  if (m.category !== undefined) out.category = m.category ?? null
   if (m.coaStatus !== undefined) out.coa_status = m.coaStatus
   if (m.rdApproved !== undefined) out.rd_approved = m.rdApproved
   if (m.commercialReady !== undefined) out.commercial_ready = m.commercialReady
   if (m.notes !== undefined) out.notes = m.notes ?? null
+  if (m.netsuiteItemId !== undefined) out.netsuite_item_id = m.netsuiteItemId ?? null
+  if (m.standardCost !== undefined) out.standard_cost = m.standardCost ?? null
+  if (m.costCurrency !== undefined) out.cost_currency = m.costCurrency ?? null
+  if (m.costSyncedAt !== undefined) out.cost_synced_at = m.costSyncedAt ?? null
+  if (m.baseUnit !== undefined) out.base_unit = m.baseUnit ?? null
+  if (m.purchaseDescription !== undefined) out.purchase_description = m.purchaseDescription ?? null
   return out
 }
