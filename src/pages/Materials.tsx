@@ -1,8 +1,29 @@
 import { useState, type ReactElement } from 'react'
-import { Package, Plus, Search, CheckCircle, XCircle, Clock, AlertCircle, Trash2 } from 'lucide-react'
+import { Package, Plus, Search, CheckCircle, XCircle, Clock, AlertCircle, Trash2, Link2 } from 'lucide-react'
 import { useStore } from '../store/useStore'
 import { Modal } from '../components/Modal'
 import type { CoaStatus } from '../types'
+
+function formatCost(value: number | undefined, currency: string | undefined): string {
+  if (value == null) return '—'
+  const code = currency ?? 'USD'
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: code, minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value)
+  } catch {
+    return `${value.toFixed(2)} ${code}`
+  }
+}
+
+function formatSyncedAt(iso: string | undefined): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  const diffDays = Math.floor((Date.now() - d.getTime()) / 86_400_000)
+  if (diffDays === 0) return 'today'
+  if (diffDays === 1) return '1 day ago'
+  if (diffDays < 30) return `${diffDays} days ago`
+  return d.toISOString().slice(0, 10)
+}
 
 const CATEGORIES = ['Active / Botanical', 'Active / Amino Acid', 'Active / Vitamin', 'Flavor', 'Sweetener', 'Acidulant', 'Preservative', 'Base', 'Excipient', 'Packaging', 'Other']
 
@@ -30,21 +51,27 @@ export function Materials() {
     coaStatus: 'pending' as CoaStatus, rdApproved: false, commercialReady: false, notes: '',
   })
 
-  const uniqueCategories = Array.from(new Set(materials.map((m) => m.category)))
+  const uniqueCategories = Array.from(new Set(materials.map((m) => m.category).filter((c): c is string => !!c)))
 
+  const q = search.toLowerCase()
   const filtered = materials.filter((m) => {
     const matchSearch =
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.supplier.toLowerCase().includes(search.toLowerCase()) ||
-      m.materialCode.toLowerCase().includes(search.toLowerCase())
+      m.name.toLowerCase().includes(q) ||
+      (m.supplier?.toLowerCase().includes(q) ?? false) ||
+      m.materialCode.toLowerCase().includes(q) ||
+      (m.purchaseDescription?.toLowerCase().includes(q) ?? false)
     const matchCat = categoryFilter === 'all' || m.category === categoryFilter
     const matchCoa = coaFilter === 'all' || m.coaStatus === coaFilter
     return matchSearch && matchCat && matchCoa
   })
 
   const handleAdd = () => {
-    if (!form.name.trim() || !form.supplier.trim()) return
-    addMaterial({ ...form, materialCode: nextMaterialCode(materials.map((m) => m.materialCode)) })
+    if (!form.name.trim()) return
+    addMaterial({
+      ...form,
+      supplier: form.supplier.trim() || undefined,
+      materialCode: nextMaterialCode(materials.map((m) => m.materialCode)),
+    })
     setForm({ name: '', supplier: '', category: CATEGORIES[0], coaStatus: 'pending', rdApproved: false, commercialReady: false, notes: '' })
     setShowAdd(false)
   }
@@ -53,8 +80,10 @@ export function Materials() {
   const coaPending = materials.filter((m) => m.coaStatus === 'pending' || m.coaStatus === 'received').length
   const commercialReady = materials.filter((m) => m.commercialReady).length
 
+  const syncedCount = materials.filter((m) => m.netsuiteItemId != null).length
+
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-8 max-w-6xl">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Materials</h1>
@@ -69,9 +98,10 @@ export function Materials() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-5 gap-4 mb-6">
         {[
           { label: 'Total Materials', value: materials.length, icon: Package, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'Synced from NetSuite', value: syncedCount, icon: Link2, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'COA Approved', value: coaApproved, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'COA Pending', value: coaPending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
           { label: 'Commercial Ready', value: commercialReady, icon: CheckCircle, color: 'text-violet-600', bg: 'bg-violet-50' },
@@ -122,8 +152,10 @@ export function Materials() {
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50">
               <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Material</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Supplier</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Vendor</th>
+              <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Std Cost</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Unit</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Synced</th>
               <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">COA</th>
               <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">R&D</th>
               <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Commercial</th>
@@ -134,14 +166,21 @@ export function Materials() {
             {filtered.map((mat) => (
               <tr key={mat.id} className="hover:bg-slate-50/80 transition-colors">
                 <td className="px-5 py-3.5">
-                  <div className="font-medium text-slate-800">{mat.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium text-slate-800">{mat.name}</div>
+                    {mat.netsuiteItemId != null && (
+                      <span title={`NetSuite item #${mat.netsuiteItemId}`} className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                        <Link2 size={10} /> NS
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs font-mono text-slate-400 mt-0.5">{mat.materialCode}</div>
                   {mat.notes && <div className="text-xs text-slate-400 mt-0.5 italic">{mat.notes}</div>}
                 </td>
-                <td className="px-4 py-3.5">
-                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{mat.category}</span>
-                </td>
-                <td className="px-4 py-3.5 text-slate-600">{mat.supplier}</td>
+                <td className="px-4 py-3.5 text-slate-600">{mat.supplier ?? <span className="text-slate-300">—</span>}</td>
+                <td className="px-4 py-3.5 text-right font-mono text-slate-700">{formatCost(mat.standardCost, mat.costCurrency)}</td>
+                <td className="px-4 py-3.5 text-slate-500 text-xs">{mat.baseUnit ?? <span className="text-slate-300">—</span>}</td>
+                <td className="px-4 py-3.5 text-slate-400 text-xs">{formatSyncedAt(mat.costSyncedAt)}</td>
                 <td className="px-4 py-3.5 text-center">
                   <div className="flex items-center justify-center gap-1.5">
                     {COA_ICONS[mat.coaStatus]}
